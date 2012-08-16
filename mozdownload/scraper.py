@@ -213,7 +213,9 @@ class DailyScraper(Scraper):
             # A date (without time) has been specified. Use its value and the
             # build index to find the requested build for that day.
             self.date = datetime.strptime(date, '%Y-%m-%d')
-            self.builds, self.build_index = self.get_build_info_for_date(self.date, self.build_index)
+            self.builds, self.build_index = self.get_build_info_for_date(self.date,
+                                                                         use_time=False,
+                                                                         build_index=self.build_index)
 
         else:
             # If no build id nor date have been specified the lastest available
@@ -235,7 +237,7 @@ class DailyScraper(Scraper):
             self.builds, self.build_index = self.get_build_info_for_date(self.date)
 
 
-    def get_build_info_for_date(self, date, build_index=None):
+    def get_build_info_for_date(self, date, use_time=True, build_index=None):
         url = '/'.join([self.base_url, self.monthly_build_list_regex])
 
         print 'Retrieving list of builds from %s' % url
@@ -249,7 +251,7 @@ class DailyScraper(Scraper):
             message = 'Folder for builds on %s has not been found' % self.date.strftime('%Y-%m-%d')
             raise NotFoundException(message, url)
 
-        if date.hour and date.minute and date.second:
+        if use_time:
             # If a time is included in the date, use it to determine the build's index
             regex = r'.*%s.*' % date.strftime('%H-%M-%S')
             build_index = parser.entries.index(parser.filter(regex)[0])
